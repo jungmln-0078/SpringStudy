@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mybatis.ReplyMapper">
+    <resultMap id="replyWithAuthorString" type="example.mybatis.blog.model.Reply">
+        <result column="rid" property="rid" />
+        <result column="aid" property="aid" />
+        <result column="author" property="author" />
+        <result column="authorString" property="authorString" />
+        <result column="content" property="content" />
+        <result column="createdate" property="createdate" />
+    </resultMap>
+    <select id="getReplies" parameterType="hashMap" resultMap="replyWithAuthorString">
+        SELECT r.*, IF(m.mid IS NULL , '탈퇴한 사용자' , m.nickname) AS authorString
+        FROM reply r
+        LEFT JOIN member m
+        ON r.author = m.mid
+        WHERE aid = #{aid}
+    </select>
+    <insert id="addReply" parameterType="hashMap">
+        INSERT INTO reply (aid, author, content)
+        VALUES (#{aid}, #{author}, #{content})
+    </insert>
+    <update id="updateReply" parameterType="hashMap">
+        UPDATE reply
+        SET content = #{content}
+        WHERE rid = #{rid}
+    </update>
+    <delete id="deleteReply" parameterType="hashMap">
+        DELETE FROM reply
+        WHERE rid = #{rid}
+    </delete>
+</mapper>

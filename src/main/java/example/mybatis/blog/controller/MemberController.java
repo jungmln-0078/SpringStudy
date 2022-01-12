@@ -1,0 +1,100 @@
+package example.mybatis.blog.controller;
+
+import example.mybatis.blog.model.Member;
+import example.mybatis.blog.model.MemberDTO;
+
+import static example.mybatis.blog.module.APIHelper.*;
+
+import example.mybatis.blog.model.MemberLoginDTO;
+import example.mybatis.blog.module.JwtManager;
+import example.mybatis.blog.response.ResponseDTO;
+import example.mybatis.blog.service.MemberService;
+import io.swagger.annotations.ApiOperation;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import java.math.BigInteger;
+import java.sql.SQLIntegrityConstraintViolationException;
+import java.util.List;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/members")
+public class MemberController {
+
+    @Autowired
+    private MemberService memberService;
+
+    @Autowired
+    private JwtManager jwtManager;
+
+    @ApiOperation(value = "회원 리스트 조회", notes = "모든 회원을 조회합니다.", responseReference = "ResponseDTO<List<Member>>")
+    @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResponseDTO<List<Member>>> getMembers() {
+        return setResponseData(HttpStatus.OK, memberService.getMembers(),null);
+    }
+
+    @ApiOperation(value = "회원 등록", notes = "회원을 등록합니다.", responseReference = "ResponseDTO<String>")
+    @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResponseDTO<String>> postMember(@RequestBody MemberDTO memberDTO) {
+        try {
+            BigInteger newMember = memberService.addMember(memberDTO);
+            String jwt = jwtManager.createToken(memberDTO.getEmail(), memberDTO.getNickname());
+            return setResponseHeaderJwt(setResponseData(HttpStatus.CREATED,"http://localhost:8080/api/member/" + newMember, null), jwt);
+        } catch (DataAccessException e) {
+            return e.getCause().getClass().equals(SQLIntegrityConstraintViolationException.class) ?
+                    setResponseData(HttpStatus.BAD_REQUEST, null, "회원 등록에 실패하였습니다. (이메일 또는 닉네임이 중복되었습니다.)") :
+                    setResponseData(HttpStatus.BAD_REQUEST, null, "회원 등록에 실패하였습니다.");
+        }
+    }
+
+    @ApiOperation(value = "회원 로그인", notes = "이메일과 비밀번호로 로그인합니다.", responseReference = "ResponseDTO<String>")
+    @PostMapping(value = "login", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResponseDTO<String>> login(@RequestBody MemberLoginDTO memberLoginDTO) {
+        try {
+            Member member = memberService.getMemberByPw(memberLoginDTO.getEmail(), memberLoginDTO.getPassword());
+            String jwt = jwtManager.createToken(member.getEmail(), member.getNickname());
+            return setResponseHeaderJwt(setResponseData(HttpStatus.OK, "http://localhost:8080/api/member/" + member.getMid(), null), jwt);
+        } catch (Exception e) {
+            return setResponseData(HttpStatus.UNAUTHORIZED, null, "로그인에 실패하였습니다.");
+        }
+    }
+
+    @ApiOperation(value = "회원 수정", notes = "회원을 수정합니다.", responseReference =  "ResponseDTO<String>")
+    @PutMapping(value = "{mid}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResponseDTO<String>> putMember(HttpServletRequest request, @PathVariable long mid, @RequestBody MemberDTO memberDTO) {
+        try {
+            if (!(jwtManager.checkClaim(request.getHeader("jwt")) == mid)) {
+                return setResponseData(HttpStatus.UNAUTHORIZED, null, "인증되지 않은 요청입니다.");
+            }
+            boolean isUpdated = memberService.updateMember(mid, memberDTO) == 1;
+            return isUpdated ?
+                    setResponseData(HttpStatus.OK, "http://localhost:8080/api/member/" + mid, null) :
+                    setResponseData(HttpStatus.NOT_FOUND, null, "회원 수정에 실패하였습니다. (해당 회원을 찾을 수 없습니다.)");
+        } catch (DataAccessException e) {
+            return setResponseData(HttpStatus.BAD_REQUEST, null, "회원 수정에 실패하였습니다.");
+        }
+    }
+
+    @ApiOperation(value = "회원 삭제", notes = "회원을 삭제합니다.", responseReference = "ResponseDTO<String>")
+    @DeleteMapping(value = "{mid}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResponseDTO<String>> deleteMember(HttpServletRequest request, @PathVariable long mid) {
+        try {
+            if (!(jwtManager.checkClaim(request.getHeader("jwt")) == mid)) {
+                return setResponseData(HttpStatus.UNAUTHORIZED, null, "인증되지 않은 요청입니다.");
+            }
+            boolean isDeleted = memberService.deleteMember(mid) == 1;
+            return isDeleted ?
+                    setResponseData(HttpStatus.OK, null, "성공적으로 삭제되었습니다.") :
+                    setResponseData(HttpStatus.NOT_FOUND, null, "회원 삭제에 실패하였습니다. (해당 회원을 찾을 수 없습니다.)");
+        } catch (DataAccessException e) {
+            return setResponseData(HttpStatus.BAD_REQUEST, null, "회원 삭제에 실패하였습니다.");
+        }
+    }
+}
