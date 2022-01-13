@@ -8,6 +8,8 @@ import example.mybatis.blog.service.ArticleService;
 import example.mybatis.blog.service.ReplyService;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
@@ -28,6 +30,8 @@ import static example.mybatis.blog.module.APIHelper.setResponseData;
 @RequiredArgsConstructor
 @RequestMapping("/api/articles")
 public class ArticleController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ArticleController.class);
 
     @Autowired
     private ArticleService articleService;

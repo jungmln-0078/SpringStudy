@@ -4,7 +4,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="example.mybatis.blog.mapper.MemberMapper">
     <select id="getMembers" resultType="example.mybatis.blog.model.Member">
-        SELECT mid, email, nickname, password
+        SELECT mid, email, password
         FROM member
     </select>
     <select id="getMemberByPk" parameterType="hashMap" resultType="example.mybatis.blog.model.Member">

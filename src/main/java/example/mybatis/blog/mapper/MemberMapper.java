@@ -13,8 +13,6 @@ public interface MemberMapper {
 
     Member getMemberByPk(@Param("email") String email);
 
-    Member getMemberByPw(@Param("email") String email, @Param("password") String password);
-
     long joinMember(Map<String, Object> map);
 
     long updateMember(@Param("mid") long mid, @Param("email") String email, @Param("password") String password);

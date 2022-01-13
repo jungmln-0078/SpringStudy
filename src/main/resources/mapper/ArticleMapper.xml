@@ -14,7 +14,7 @@
     <select id="getArticles" parameterType="hashMap" resultMap="articleWithAuthorString">
         SELECT sub.*
         FROM (
-            SELECT a.*, IF(m.mid IS NULL , '탈퇴한 사용자' , m.nickname) AS authorString
+            SELECT a.*, IF(m.mid IS NULL , '탈퇴한 사용자', m.email) AS authorString
             FROM article a
             LEFT JOIN member m
             ON a.author = m.mid
@@ -23,7 +23,7 @@
         LIMIT #{page}, #{size}
     </select>
     <select id="getArticleById" parameterType="long" resultMap="articleWithAuthorString">
-        SELECT a.*, IF(m.mid IS NULL , '탈퇴한 사용자' , m.nickname) AS authorString
+        SELECT a.*, IF(m.mid IS NULL , '탈퇴한 사용자', m.email) AS authorString
         FROM article a
         LEFT JOIN member m
         ON a.author = m.mid
