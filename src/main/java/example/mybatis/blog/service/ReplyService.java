@@ -1,12 +1,8 @@
 package example.mybatis.blog.service;
 
-import example.mybatis.blog.controller.ArticleController;
-import example.mybatis.blog.model.ArticleDTO;
+import example.mybatis.blog.mapper.ReplyMapper;
 import example.mybatis.blog.model.Reply;
 import example.mybatis.blog.model.ReplyDTO;
-import org.mybatis.spring.SqlSessionTemplate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
@@ -22,12 +18,10 @@ import java.util.Map;
 public class ReplyService {
 
     @Autowired
-    private SqlSessionTemplate sqlSessionTemplate;
+    private ReplyMapper replyMapper;
 
     public List<Reply> getReplies(long aid) {
-        Map<String, Object> param = new HashMap<>();
-        param.put("aid", aid);
-        return sqlSessionTemplate.selectList("mybatis.ReplyMapper.getReplies", param);
+        return replyMapper.getReplies(aid);
     }
 
     public BigInteger addReply(ReplyDTO replyDTO) throws DataAccessException {
@@ -35,20 +29,15 @@ public class ReplyService {
         param.put("aid", replyDTO.getAid());
         param.put("author", replyDTO.getAuthor());
         param.put("content", replyDTO.getContent());
-        sqlSessionTemplate.insert("mybatis.ReplyMapper.addReply", param);
+        replyMapper.addReply(replyDTO.getAid(), replyDTO.getAuthor(), replyDTO.getContent());
         return (BigInteger) param.get("rid");
     }
 
     public int updateReply(long rid, String content) throws DataAccessException {
-        Map<String, Object> param = new HashMap<>();
-        param.put("rid", rid);
-        param.put("content", content);
-        return sqlSessionTemplate.update("mybatis.ReplyMapper.updateReply", param);
+        return replyMapper.updateReply(content, rid);
     }
 
     public int deleteReply(long rid) throws DataAccessException {
-        Map<String, Object> param = new HashMap<>();
-        param.put("rid", rid);
-        return sqlSessionTemplate.delete("mybatis.ReplyMapper.deleteReply", param);
+        return replyMapper.deleteReply(rid);
     }
 }

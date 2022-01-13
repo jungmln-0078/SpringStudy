@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="mybatis.ArticleMapper">
+<mapper namespace="example.mybatis.blog.mapper.ArticleMapper">
     <resultMap id="articleWithAuthorString" type="example.mybatis.blog.model.Article">
         <result column="aid" property="aid" />
         <result column="title" property="title" />
@@ -22,7 +22,7 @@
         ORDER BY sub.aid
         LIMIT #{page}, #{size}
     </select>
-    <select id="getArticleById" parameterType="hashMap" resultMap="articleWithAuthorString">
+    <select id="getArticleById" parameterType="long" resultMap="articleWithAuthorString">
         SELECT a.*, IF(m.mid IS NULL , '탈퇴한 사용자' , m.nickname) AS authorString
         FROM article a
         LEFT JOIN member m

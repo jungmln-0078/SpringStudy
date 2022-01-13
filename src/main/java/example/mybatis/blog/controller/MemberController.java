@@ -45,9 +45,10 @@ public class MemberController {
     public ResponseEntity<ResponseDTO<String>> postMember(@RequestBody MemberDTO memberDTO) {
         try {
             BigInteger newMember = memberService.addMember(memberDTO);
-            String jwt = jwtManager.createToken(memberDTO.getEmail(), memberDTO.getNickname());
+            String jwt = jwtManager.createToken(memberDTO.getEmail());
             return setResponseHeaderJwt(setResponseData(HttpStatus.CREATED,"http://localhost:8080/api/member/" + newMember, null), jwt);
         } catch (DataAccessException e) {
+            e.printStackTrace();
             return e.getCause().getClass().equals(SQLIntegrityConstraintViolationException.class) ?
                     setResponseData(HttpStatus.BAD_REQUEST, null, "회원 등록에 실패하였습니다. (이메일 또는 닉네임이 중복되었습니다.)") :
                     setResponseData(HttpStatus.BAD_REQUEST, null, "회원 등록에 실패하였습니다.");
@@ -59,7 +60,7 @@ public class MemberController {
     public ResponseEntity<ResponseDTO<String>> login(@RequestBody MemberLoginDTO memberLoginDTO) {
         try {
             Member member = memberService.getMemberByPw(memberLoginDTO.getEmail(), memberLoginDTO.getPassword());
-            String jwt = jwtManager.createToken(member.getEmail(), member.getNickname());
+            String jwt = jwtManager.createToken(member.getEmail());
             return setResponseHeaderJwt(setResponseData(HttpStatus.OK, "http://localhost:8080/api/member/" + member.getMid(), null), jwt);
         } catch (Exception e) {
             return setResponseData(HttpStatus.UNAUTHORIZED, null, "로그인에 실패하였습니다.");
@@ -70,7 +71,7 @@ public class MemberController {
     @PutMapping(value = "{mid}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseDTO<String>> putMember(HttpServletRequest request, @PathVariable long mid, @RequestBody MemberDTO memberDTO) {
         try {
-            if (!(jwtManager.checkClaim(request.getHeader("jwt")) == mid)) {
+            if (!(jwtManager.checkClaim(request.getHeader("jwt")))) {
                 return setResponseData(HttpStatus.UNAUTHORIZED, null, "인증되지 않은 요청입니다.");
             }
             boolean isUpdated = memberService.updateMember(mid, memberDTO) == 1;
@@ -86,7 +87,7 @@ public class MemberController {
     @DeleteMapping(value = "{mid}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseDTO<String>> deleteMember(HttpServletRequest request, @PathVariable long mid) {
         try {
-            if (!(jwtManager.checkClaim(request.getHeader("jwt")) == mid)) {
+            if (!(jwtManager.checkClaim(request.getHeader("jwt")))) {
                 return setResponseData(HttpStatus.UNAUTHORIZED, null, "인증되지 않은 요청입니다.");
             }
             boolean isDeleted = memberService.deleteMember(mid) == 1;

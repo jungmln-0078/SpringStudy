@@ -16,7 +16,5 @@ import java.io.Serializable;
 public class MemberDTO implements Serializable {
     private String email;
 
-    private String nickname;
-
     private String password;
 }

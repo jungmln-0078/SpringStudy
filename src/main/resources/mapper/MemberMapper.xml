@@ -2,31 +2,26 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="mybatis.MemberMapper">
+<mapper namespace="example.mybatis.blog.mapper.MemberMapper">
     <select id="getMembers" resultType="example.mybatis.blog.model.Member">
-        SELECT mid, email, nickname
+        SELECT mid, email, nickname, password
         FROM member
     </select>
     <select id="getMemberByPk" parameterType="hashMap" resultType="example.mybatis.blog.model.Member">
-        SELECT mid, email, nickname
+        SELECT mid, email, password
         FROM member
-        WHERE email = #{email} AND nickname = #{nickname}
-    </select>
-    <select id="getMemberByPw" parameterType="hashMap" resultType="example.mybatis.blog.model.Member">
-        SELECT mid, email, nickname
-        FROM member
-        WHERE email = #{email} AND password = #{password}
+        WHERE email = #{email}
     </select>
     <insert id="joinMember" parameterType="hashMap" useGeneratedKeys="true" keyProperty="mid">
-        INSERT INTO member (email, nickname, password)
-        VALUES (#{email}, #{nickname}, #{password})
+        INSERT INTO member (email, password)
+        VALUES (#{email}, #{password})
     </insert>
     <update id="updateMember" parameterType="hashMap">
         UPDATE member
-        SET email = #{email}, nickname = #{nickname}, password = #{password}
+        SET email = #{email}, password = #{password}
         WHERE mid = #{mid}
     </update>
-    <delete id="deleteMember" parameterType="hashMap">
+    <delete id="deleteMember" parameterType="long">
         DELETE FROM member
         WHERE mid = #{mid}
     </delete>

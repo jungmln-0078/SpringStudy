@@ -20,7 +20,7 @@ public class JwtManager {
     @Autowired
     private MemberService memberService;
 
-    public String createToken(String email, String nickname) {
+    public String createToken(String email) {
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DATE, 1);
 
@@ -30,33 +30,29 @@ public class JwtManager {
                 .setExpiration(new Date(cal.getTimeInMillis()));
 
         claims.put("email", email);
-        claims.put("nickname", nickname);
 
-        String jwt = Jwts.builder()
+        return Jwts.builder()
                 .setHeaderParam("typ", "JWT")
                 .setClaims(claims)
                 .signWith(SignatureAlgorithm.HS256, secretKey.getBytes())
                 .compact();
-
-        return jwt;
     }
 
-    public long checkClaim(String jwt) {
+    public boolean checkClaim(String jwt) {
         try {
             Claims claims = Jwts.parser()
                     .setSigningKey(secretKey.getBytes())
                     .parseClaimsJws(jwt).getBody();
 
-            return memberService.getMemberByPk((String) claims.get("email"), (String) claims.get("nickname")).getMid();
+            return true;
         } catch (Exception e) {
-            return 0L;
+            return false;
         }
     }
 
     public Claims getJwtContent(String jwt) {
-        Claims claims = Jwts.parser()
+        return Jwts.parser()
                 .setSigningKey(secretKey.getBytes())
                 .parseClaimsJws(jwt).getBody();
-        return claims;
     }
 }

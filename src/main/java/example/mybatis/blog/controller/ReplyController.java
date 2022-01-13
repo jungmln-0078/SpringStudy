@@ -33,7 +33,7 @@ public class ReplyController {
     @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseDTO<String>> writeReply(HttpServletRequest request, @RequestBody ReplyDTO replyDTO) {
         try {
-            if (jwtManager.checkClaim(request.getHeader("jwt")) == 0L) {
+            if (!jwtManager.checkClaim(request.getHeader("jwt"))) {
                 return setResponseData(HttpStatus.UNAUTHORIZED, null, "인증되지 않은 요청입니다.");
             }
             BigInteger newReply = replyService.addReply(replyDTO);
@@ -47,7 +47,7 @@ public class ReplyController {
     @PutMapping(value = "{rid}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseDTO<String>> updateReply(HttpServletRequest request, @PathVariable long rid, @RequestBody String content) {
         try {
-            if (jwtManager.checkClaim(request.getHeader("jwt")) == 0L) {
+            if (!jwtManager.checkClaim(request.getHeader("jwt"))) {
                 return setResponseData(HttpStatus.UNAUTHORIZED, null, "인증되지 않은 요청입니다.");
             }
             boolean isUpdated = replyService.updateReply(rid, content) == 1;
@@ -63,7 +63,7 @@ public class ReplyController {
     @DeleteMapping(value = "{rid}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseDTO<String>> deleteReply(HttpServletRequest request, @PathVariable long rid) {
         try {
-            if (jwtManager.checkClaim(request.getHeader("jwt")) == 0L) {
+            if (!jwtManager.checkClaim(request.getHeader("jwt"))) {
                 return setResponseData(HttpStatus.UNAUTHORIZED, null, "인증되지 않은 요청입니다.");
             }
             boolean isDeleted = replyService.deleteReply(rid) == 1;

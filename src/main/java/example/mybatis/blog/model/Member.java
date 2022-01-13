@@ -21,7 +21,5 @@ public class Member implements Serializable {
 
     private String email;
 
-    private String nickname;
-
     private String password;
 }

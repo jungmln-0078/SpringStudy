@@ -49,6 +49,7 @@ public class ArticleController {
             }
             return setResponseData(HttpStatus.OK, articles ,null);
         } catch (Exception e) {
+            e.printStackTrace();
             redirect(response, "localhost:8080/api/articles");
             return null;
         }
@@ -71,7 +72,7 @@ public class ArticleController {
     @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseDTO<String>> addArticle(HttpServletRequest request, @RequestBody ArticleDTO articleDTO) {
         try {
-            if (jwtManager.checkClaim(request.getHeader("jwt")) == 0L) {
+            if (!jwtManager.checkClaim(request.getHeader("jwt"))) {
                 return setResponseData(HttpStatus.UNAUTHORIZED, null, "인증되지 않은 요청입니다.");
             }
             BigInteger newPost = articleService.addArticle(articleDTO);
@@ -85,7 +86,7 @@ public class ArticleController {
     @PutMapping(value = "{aid}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseDTO<String>> updateArticle(HttpServletRequest request, @PathVariable long aid, @RequestBody ArticleDTO articleDTO) {
         try {
-            if (jwtManager.checkClaim(request.getHeader("jwt")) == 0L) {
+            if (!jwtManager.checkClaim(request.getHeader("jwt"))) {
                 return setResponseData(HttpStatus.UNAUTHORIZED, null, "인증되지 않은 요청입니다.");
             }
             boolean isUpdated = articleService.updateArticle(aid, articleDTO) == 1;
@@ -101,7 +102,7 @@ public class ArticleController {
     @DeleteMapping(value = "{aid}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseDTO<String>> deleteArticle(HttpServletRequest request, @PathVariable long aid) {
         try {
-            if (jwtManager.checkClaim(request.getHeader("jwt")) == 0L) {
+            if (!jwtManager.checkClaim(request.getHeader("jwt"))) {
                 return setResponseData(HttpStatus.UNAUTHORIZED, null, "인증되지 않은 요청입니다.");
             }
             boolean isDeleted = articleService.deleteArticle(aid) == 1;

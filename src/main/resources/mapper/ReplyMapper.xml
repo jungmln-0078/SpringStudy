@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="mybatis.ReplyMapper">
+<mapper namespace="example.mybatis.blog.mapper.ReplyMapper">
     <resultMap id="replyWithAuthorString" type="example.mybatis.blog.model.Reply">
         <result column="rid" property="rid" />
         <result column="aid" property="aid" />
@@ -27,7 +27,7 @@
         SET content = #{content}
         WHERE rid = #{rid}
     </update>
-    <delete id="deleteReply" parameterType="hashMap">
+    <delete id="deleteReply" parameterType="long">
         DELETE FROM reply
         WHERE rid = #{rid}
     </delete>
