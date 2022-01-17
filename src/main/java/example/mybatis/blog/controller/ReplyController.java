@@ -11,11 +11,14 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.math.BigInteger;
 
+import static example.mybatis.blog.module.APIHelper.parseErrors;
 import static example.mybatis.blog.module.APIHelper.setResponseData;
 
 @RestController
@@ -31,14 +34,18 @@ public class ReplyController {
 
     @ApiOperation(value = "댓글 작성", notes = "댓글을 작성합니다.", responseReference = "ResponseDTO<String>")
     @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ResponseDTO<String>> writeReply(HttpServletRequest request, @RequestBody ReplyDTO replyDTO) {
+    public ResponseEntity<ResponseDTO<String>> writeReply(HttpServletRequest request, @RequestBody @Valid ReplyDTO replyDTO, BindingResult bindingResult) {
         try {
             if (!jwtManager.checkClaim(request.getHeader("jwt"))) {
                 return setResponseData(HttpStatus.UNAUTHORIZED, null, "인증되지 않은 요청입니다.");
             }
+            if (bindingResult.hasErrors()) {
+                return setResponseData(HttpStatus.BAD_REQUEST, parseErrors(bindingResult), "댓글 작성에 실패하였습니다.");
+            }
             BigInteger newReply = replyService.addReply(replyDTO);
-            return setResponseData(HttpStatus.CREATED,"", null);
+            return setResponseData(HttpStatus.CREATED, "", null);
         } catch (DataAccessException e) {
+            e.printStackTrace();
             return setResponseData(HttpStatus.BAD_REQUEST, null, "댓글 작성에 실패하였습니다.");
         }
     }

@@ -11,20 +11,25 @@ import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.validation.beanvalidation.MethodValidationPostProcessor;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
 import javax.sql.DataSource;
 
 @Configuration
 @EnableTransactionManagement
 @EnableWebMvc
-public class SpringConfig implements WebMvcConfigurer {
+public class SpringConfig extends WebMvcConfigurerAdapter {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new CustomInterceptor()).addPathPatterns("/**");
+        registry.addInterceptor(new CustomInterceptor()).addPathPatterns("/**")
+                .excludePathPatterns("/swagger-ui").excludePathPatterns("/swagger-resources/**")
+                .excludePathPatterns("/error").excludePathPatterns("/webjars/**").excludePathPatterns("v3");
     }
 
     @Bean
@@ -52,7 +57,12 @@ public class SpringConfig implements WebMvcConfigurer {
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public InternalResourceViewResolver defaultViewResolver() {
+        return new InternalResourceViewResolver();
     }
 }

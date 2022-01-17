@@ -16,11 +16,18 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.Positive;
 import java.math.BigInteger;
 import java.sql.SQLIntegrityConstraintViolationException;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -42,13 +49,15 @@ public class MemberController {
 
     @ApiOperation(value = "회원 등록", notes = "회원을 등록합니다.", responseReference = "ResponseDTO<String>")
     @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ResponseDTO<String>> postMember(@RequestBody MemberDTO memberDTO) {
+    public ResponseEntity<ResponseDTO<String>> postMember(@RequestBody @Valid MemberDTO memberDTO, BindingResult bindingResult) {
         try {
+            if (bindingResult.hasErrors()) {
+                return setResponseData(HttpStatus.BAD_REQUEST, parseErrors(bindingResult), "회원 등록에 실패하였습니다.");
+            }
             BigInteger newMember = memberService.addMember(memberDTO);
             String jwt = jwtManager.createToken(memberDTO.getEmail());
-            return setResponseHeaderJwt(setResponseData(HttpStatus.CREATED,"http://localhost:8080/api/member/" + newMember, null), jwt);
+            return setResponseHeaderJwt(setResponseData(HttpStatus.CREATED, "http://localhost:8080/api/member/" + newMember, null), jwt);
         } catch (DataAccessException e) {
-            e.printStackTrace();
             return e.getCause().getClass().equals(SQLIntegrityConstraintViolationException.class) ?
                     setResponseData(HttpStatus.BAD_REQUEST, null, "회원 등록에 실패하였습니다. (이메일 또는 닉네임이 중복되었습니다.)") :
                     setResponseData(HttpStatus.BAD_REQUEST, null, "회원 등록에 실패하였습니다.");
@@ -57,8 +66,11 @@ public class MemberController {
 
     @ApiOperation(value = "회원 로그인", notes = "이메일과 비밀번호로 로그인합니다.", responseReference = "ResponseDTO<String>")
     @PostMapping(value = "login", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ResponseDTO<String>> login(@RequestBody MemberLoginDTO memberLoginDTO) {
+    public ResponseEntity<ResponseDTO<String>> login(@RequestBody @Valid MemberLoginDTO memberLoginDTO, BindingResult bindingResult) {
         try {
+            if (bindingResult.hasErrors()) {
+                return setResponseData(HttpStatus.BAD_REQUEST, parseErrors(bindingResult), "로그인에 실패하였습니다.");
+            }
             Member member = memberService.getMemberByPw(memberLoginDTO.getEmail(), memberLoginDTO.getPassword());
             String jwt = jwtManager.createToken(member.getEmail());
             return setResponseHeaderJwt(setResponseData(HttpStatus.OK, "http://localhost:8080/api/member/" + member.getMid(), null), jwt);
@@ -67,16 +79,19 @@ public class MemberController {
         }
     }
 
-    @ApiOperation(value = "회원 수정", notes = "회원을 수정합니다.", responseReference =  "ResponseDTO<String>")
+    @ApiOperation(value = "회원 수정", notes = "회원을 수정합니다.", responseReference = "ResponseDTO<String>")
     @PutMapping(value = "{mid}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ResponseDTO<String>> putMember(HttpServletRequest request, @PathVariable long mid, @RequestBody MemberDTO memberDTO) {
+    public ResponseEntity<ResponseDTO<String>> putMember(HttpServletRequest request, @PathVariable long mid, @RequestBody @Valid MemberDTO memberDTO, BindingResult bindingResult) {
         try {
             if (!(jwtManager.checkClaim(request.getHeader("jwt")))) {
                 return setResponseData(HttpStatus.UNAUTHORIZED, null, "인증되지 않은 요청입니다.");
             }
+            if (bindingResult.hasErrors()) {
+                return setResponseData(HttpStatus.BAD_REQUEST, parseErrors(bindingResult), "회원 수정에 실패하였습니다.");
+            }
             boolean isUpdated = memberService.updateMember(mid, memberDTO) == 1;
             return isUpdated ?
-                    setResponseData(HttpStatus.OK, "http://localhost:8080/api/member/" + mid, null) :
+                    setResponseData(HttpStatus.OK, "http://localhost:8080/api/member/" + mid, "수정 되었습니다.") :
                     setResponseData(HttpStatus.NOT_FOUND, null, "회원 수정에 실패하였습니다. (해당 회원을 찾을 수 없습니다.)");
         } catch (DataAccessException e) {
             return setResponseData(HttpStatus.BAD_REQUEST, null, "회원 수정에 실패하였습니다.");

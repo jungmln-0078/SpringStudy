@@ -20,13 +20,12 @@ import java.util.Arrays;
 import java.util.List;
 
 @Configuration
-@EnableSwagger2
 public class SwaggerConfig extends WebMvcConfigurationSupport {
 
     @Bean
     public Docket api() {
         String version = "v1";
-        return new Docket(DocumentationType.SWAGGER_2).apiInfo(apiInfo()).groupName(version).select()
+        return new Docket(DocumentationType.OAS_30).apiInfo(apiInfo()).groupName(version).select()
                 .apis(RequestHandlerSelectors.basePackage("example.mybatis.blog"))
                 .paths(PathSelectors.any())
                 .build()
