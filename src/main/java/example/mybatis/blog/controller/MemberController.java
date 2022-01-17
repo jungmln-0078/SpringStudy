@@ -84,7 +84,7 @@ public class MemberController {
     @PutMapping(value = "{mid}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseDTO<String>> putMember(HttpServletRequest request, @PathVariable @Valid @Positive long mid, @RequestBody @Valid MemberDTO memberDTO, BindingResult bindingResult) {
         try {
-            if (!(jwtManager.checkClaim(request.getHeader("jwt")))) {
+            if (!(jwtManager.checkClaim(request.getHeader("jwt"), mid))) {
                 return setResponseData(HttpStatus.UNAUTHORIZED, null, "인증되지 않은 요청입니다.");
             }
             if (bindingResult.hasErrors()) {
@@ -103,7 +103,7 @@ public class MemberController {
     @DeleteMapping(value = "{mid}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseDTO<String>> deleteMember(HttpServletRequest request, @PathVariable @Valid @Positive long mid) {
         try {
-            if (!(jwtManager.checkClaim(request.getHeader("jwt")))) {
+            if (!(jwtManager.checkClaim(request.getHeader("jwt"), mid))) {
                 return setResponseData(HttpStatus.UNAUTHORIZED, null, "인증되지 않은 요청입니다.");
             }
             boolean isDeleted = memberService.deleteMember(mid) == 1;

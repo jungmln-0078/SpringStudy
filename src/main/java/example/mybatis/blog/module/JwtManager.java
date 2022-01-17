@@ -50,6 +50,18 @@ public class JwtManager {
         }
     }
 
+    public boolean checkClaim(String jwt, long mid) {
+        try {
+            Claims claims = Jwts.parser()
+                    .setSigningKey(secretKey.getBytes())
+                    .parseClaimsJws(jwt).getBody();
+
+            return memberService.getMemberById((int) claims.get("mid")) != null && (long) claims.get("mid") == mid;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     public Claims getJwtContent(String jwt) {
         return Jwts.parser()
                 .setSigningKey(secretKey.getBytes())

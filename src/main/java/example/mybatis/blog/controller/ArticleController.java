@@ -96,7 +96,7 @@ public class ArticleController {
     @PutMapping(value = "{aid}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseDTO<String>> updateArticle(HttpServletRequest request, @PathVariable @Valid @Positive long aid, @RequestBody @Valid ArticleDTO articleDTO, BindingResult bindingResult) {
         try {
-            if (!jwtManager.checkClaim(request.getHeader("jwt"))) {
+            if (!jwtManager.checkClaim(request.getHeader("jwt"), articleDTO.getAuthor())) {
                 return setResponseData(HttpStatus.UNAUTHORIZED, null, "인증되지 않은 요청입니다.");
             }
             if (bindingResult.hasErrors()) {
