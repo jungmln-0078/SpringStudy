@@ -7,10 +7,15 @@
         SELECT mid, email, password
         FROM member
     </select>
-    <select id="getMemberByPk" parameterType="hashMap" resultType="example.mybatis.blog.model.Member">
+    <select id="getMemberByEmail" parameterType="string" resultType="example.mybatis.blog.model.Member">
         SELECT mid, email, password
         FROM member
         WHERE email = #{email}
+    </select>
+    <select id="getMemberById" parameterType="long" resultType="example.mybatis.blog.model.Member">
+        SELECT mid, email, password
+        FROM member
+        WHERE mid = #{mid}
     </select>
     <insert id="joinMember" parameterType="hashMap" useGeneratedKeys="true" keyProperty="mid">
         INSERT INTO member (email, password)

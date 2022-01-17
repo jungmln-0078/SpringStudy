@@ -24,16 +24,20 @@ public class MemberService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public List<Member> getMembers() throws DataAccessException  {
+    public List<Member> getMembers() throws DataAccessException {
         return memberMapper.getMembers();
     }
 
-    public Member getMemberByPk(String email) throws DataAccessException {
-        return memberMapper.getMemberByPk(email);
+    public Member getMemberByEmail(String email) throws DataAccessException {
+        return memberMapper.getMemberByEmail(email);
+    }
+
+    public Member getMemberById(long mid) throws DataAccessException {
+        return memberMapper.getMemberById(mid);
     }
 
     public Member getMemberByPw(String email, String password) throws DataAccessException {
-        Member member = getMemberByPk(email);
+        Member member = getMemberByEmail(email);
         if (passwordEncoder.matches(password, member.getPassword())) {
             return member;
         } else {

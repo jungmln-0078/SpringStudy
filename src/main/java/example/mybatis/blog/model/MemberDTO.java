@@ -16,7 +16,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 public class MemberDTO implements Serializable {
-    @Email(regexp = "^[A-Za-z0-9+_.-]+@(.+)$")
+    @Email
     @NotEmpty
     private String email;
 

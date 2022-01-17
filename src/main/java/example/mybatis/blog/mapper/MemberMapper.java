@@ -11,7 +11,9 @@ import java.util.Map;
 public interface MemberMapper {
     List<Member> getMembers();
 
-    Member getMemberByPk(@Param("email") String email);
+    Member getMemberByEmail(@Param("email") String email);
+
+    Member getMemberById(@Param("mid") long mid);
 
     long joinMember(Map<String, Object> map);
 

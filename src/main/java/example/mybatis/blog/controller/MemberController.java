@@ -53,7 +53,7 @@ public class MemberController {
                 return setResponseData(HttpStatus.BAD_REQUEST, parseErrors(bindingResult), "회원 등록에 실패하였습니다.");
             }
             BigInteger newMember = memberService.addMember(memberDTO);
-            String jwt = jwtManager.createToken(memberDTO.getEmail());
+            String jwt = jwtManager.createToken(newMember.longValue());
             return setResponseHeaderJwt(setResponseData(HttpStatus.CREATED, "http://localhost:8080/api/member/" + newMember, null), jwt);
         } catch (DataAccessException e) {
             return e.getCause().getClass().equals(SQLIntegrityConstraintViolationException.class) ?
@@ -70,7 +70,7 @@ public class MemberController {
                 return setResponseData(HttpStatus.BAD_REQUEST, parseErrors(bindingResult), "로그인에 실패하였습니다.");
             }
             Member member = memberService.getMemberByPw(memberLoginDTO.getEmail(), memberLoginDTO.getPassword());
-            String jwt = jwtManager.createToken(member.getEmail());
+            String jwt = jwtManager.createToken(member.getMid());
             return setResponseHeaderJwt(setResponseData(HttpStatus.OK, "http://localhost:8080/api/member/" + member.getMid(), null), jwt);
         } catch (Exception e) {
             return setResponseData(HttpStatus.UNAUTHORIZED, null, "로그인에 실패하였습니다.");

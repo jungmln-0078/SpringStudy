@@ -20,7 +20,7 @@ public class JwtManager {
     @Autowired
     private MemberService memberService;
 
-    public String createToken(String email) {
+    public String createToken(long mid) {
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DATE, 1);
 
@@ -29,7 +29,7 @@ public class JwtManager {
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(cal.getTimeInMillis()));
 
-        claims.put("email", email);
+        claims.put("mid", mid);
 
         return Jwts.builder()
                 .setHeaderParam("typ", "JWT")
@@ -43,9 +43,10 @@ public class JwtManager {
             Claims claims = Jwts.parser()
                     .setSigningKey(secretKey.getBytes())
                     .parseClaimsJws(jwt).getBody();
-
+            memberService.getMemberById((int) claims.get("mid"));
             return true;
         } catch (Exception e) {
+            e.printStackTrace();
             return false;
         }
     }
