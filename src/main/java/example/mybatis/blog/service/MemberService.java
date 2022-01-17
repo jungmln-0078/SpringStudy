@@ -3,7 +3,6 @@ package example.mybatis.blog.service;
 import example.mybatis.blog.mapper.MemberMapper;
 import example.mybatis.blog.model.Member;
 import example.mybatis.blog.model.MemberDTO;
-import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.crypto.password.PasswordEncoder;

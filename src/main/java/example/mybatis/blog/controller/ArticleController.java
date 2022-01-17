@@ -16,11 +16,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
@@ -30,6 +32,7 @@ import static example.mybatis.blog.module.APIHelper.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/articles")
+@Validated
 public class ArticleController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ArticleController.class);
@@ -45,8 +48,8 @@ public class ArticleController {
 
     @ApiOperation(value = "게시글 리스트 조회", notes = "게시글을 조회합니다.", responseReference = "ResponseDTO<List<Article>>")
     @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ResponseDTO<List<Article>>> getArticles(HttpServletResponse response, @RequestParam(value = "size", required = false, defaultValue = "10") long size,
-                                                                  @RequestParam(value = "page", required = false, defaultValue = "1") long page) throws IOException {
+    public ResponseEntity<ResponseDTO<List<Article>>> getArticles(HttpServletResponse response, @RequestParam(value = "size", required = false, defaultValue = "10") @Valid @Positive long size,
+                                                                  @RequestParam(value = "page", required = false, defaultValue = "1") @Valid @Positive long page) throws IOException {
         try {
             List<Article> articles = articleService.getArticles(size, page);
             for (Article a : articles) {
@@ -62,7 +65,7 @@ public class ArticleController {
 
     @ApiOperation(value = "게시글 보기", notes = "게시글의 내용을 봅니다.", responseReference = "ResponseDTO<Article>")
     @GetMapping(value = "{aid}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ResponseDTO<Article>> getArticleById(@PathVariable long aid) {
+    public ResponseEntity<ResponseDTO<Article>> getArticleById(@PathVariable @Valid @Positive long aid) {
         Article article = articleService.getArticleById(aid);
         if (article == null) {
             return setResponseData(HttpStatus.NOT_FOUND, null, "게시글을 찾을 수 없습니다.");
@@ -92,7 +95,7 @@ public class ArticleController {
 
     @ApiOperation(value = "게시글 수정", notes = "게시글을 수정합니다.", responseReference = "ResponseDTO<String>")
     @PutMapping(value = "{aid}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ResponseDTO<String>> updateArticle(HttpServletRequest request, @PathVariable long aid, @RequestBody @Valid ArticleDTO articleDTO, BindingResult bindingResult) {
+    public ResponseEntity<ResponseDTO<String>> updateArticle(HttpServletRequest request, @PathVariable @Valid @Positive long aid, @RequestBody @Valid ArticleDTO articleDTO, BindingResult bindingResult) {
         try {
             if (!jwtManager.checkClaim(request.getHeader("jwt"))) {
                 return setResponseData(HttpStatus.UNAUTHORIZED, null, "인증되지 않은 요청입니다.");
@@ -111,7 +114,7 @@ public class ArticleController {
 
     @ApiOperation(value = "게시글 삭제", notes = "게시글을 삭제합니다.", responseReference = "ResponseDTO<String>")
     @DeleteMapping(value = "{aid}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ResponseDTO<String>> deleteArticle(HttpServletRequest request, @PathVariable long aid) {
+    public ResponseEntity<ResponseDTO<String>> deleteArticle(HttpServletRequest request, @PathVariable @Valid @Positive long aid) {
         try {
             if (!jwtManager.checkClaim(request.getHeader("jwt"))) {
                 return setResponseData(HttpStatus.UNAUTHORIZED, null, "인증되지 않은 요청입니다.");

@@ -3,7 +3,6 @@ package example.mybatis.blog.service;
 import example.mybatis.blog.mapper.ArticleMapper;
 import example.mybatis.blog.model.Article;
 import example.mybatis.blog.model.ArticleDTO;
-import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;

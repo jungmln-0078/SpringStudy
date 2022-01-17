@@ -2,9 +2,6 @@ package example.mybatis.blog.controller;
 
 import example.mybatis.blog.model.Member;
 import example.mybatis.blog.model.MemberDTO;
-
-import static example.mybatis.blog.module.APIHelper.*;
-
 import example.mybatis.blog.model.MemberLoginDTO;
 import example.mybatis.blog.module.JwtManager;
 import example.mybatis.blog.response.ResponseDTO;
@@ -17,22 +14,22 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.Positive;
 import java.math.BigInteger;
 import java.sql.SQLIntegrityConstraintViolationException;
-import java.util.ArrayList;
 import java.util.List;
+
+import static example.mybatis.blog.module.APIHelper.*;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/members")
+@Validated
 public class MemberController {
 
     @Autowired
@@ -81,7 +78,7 @@ public class MemberController {
 
     @ApiOperation(value = "회원 수정", notes = "회원을 수정합니다.", responseReference = "ResponseDTO<String>")
     @PutMapping(value = "{mid}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ResponseDTO<String>> putMember(HttpServletRequest request, @PathVariable long mid, @RequestBody @Valid MemberDTO memberDTO, BindingResult bindingResult) {
+    public ResponseEntity<ResponseDTO<String>> putMember(HttpServletRequest request, @PathVariable @Valid @Positive long mid, @RequestBody @Valid MemberDTO memberDTO, BindingResult bindingResult) {
         try {
             if (!(jwtManager.checkClaim(request.getHeader("jwt")))) {
                 return setResponseData(HttpStatus.UNAUTHORIZED, null, "인증되지 않은 요청입니다.");
@@ -100,7 +97,7 @@ public class MemberController {
 
     @ApiOperation(value = "회원 삭제", notes = "회원을 삭제합니다.", responseReference = "ResponseDTO<String>")
     @DeleteMapping(value = "{mid}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ResponseDTO<String>> deleteMember(HttpServletRequest request, @PathVariable long mid) {
+    public ResponseEntity<ResponseDTO<String>> deleteMember(HttpServletRequest request, @PathVariable @Valid @Positive long mid) {
         try {
             if (!(jwtManager.checkClaim(request.getHeader("jwt")))) {
                 return setResponseData(HttpStatus.UNAUTHORIZED, null, "인증되지 않은 요청입니다.");

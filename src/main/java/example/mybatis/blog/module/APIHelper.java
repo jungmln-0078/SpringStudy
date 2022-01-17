@@ -6,7 +6,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
-import org.springframework.validation.ObjectError;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -33,9 +32,9 @@ public class APIHelper {
         List<FieldError> errors = bindingResult.getFieldErrors();
         List<String> errorMsg = new ArrayList<>();
         for (FieldError e : errors) {
-            errorMsg.add(e.getField() + " 는(은) " + e.getDefaultMessage());
+            errorMsg.add(e.getField() + " 은(는) " + e.getDefaultMessage());
         }
-        return errorMsg.toString();
+        return String.join(" , ", errorMsg);
     }
 
     public static void redirect(HttpServletResponse response, String uri) throws IOException {

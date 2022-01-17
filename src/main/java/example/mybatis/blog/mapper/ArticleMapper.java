@@ -4,7 +4,6 @@ import example.mybatis.blog.model.Article;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 
