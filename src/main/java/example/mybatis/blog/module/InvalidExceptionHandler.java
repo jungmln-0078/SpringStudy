@@ -22,11 +22,7 @@ public class InvalidExceptionHandler {
     protected ResponseEntity<ResponseDTO<String>> constraintViolationException(ConstraintViolationException ex) {
         List<String> errorMsg = new ArrayList<>();
         for (ConstraintViolation<?> e : ex.getConstraintViolations()) {
-            String field = "";
-            for (Path.Node node : e.getPropertyPath()) {
-                field = node.getName();
-            }
-            errorMsg.add(field + " 은(는) " + e.getMessage());
+            errorMsg.add(((PathImpl) e.getPropertyPath()).getLeafNode().getName() + " 은(는) " + e.getMessage());
         }
         return setResponseData(HttpStatus.BAD_REQUEST, String.join(" , ", errorMsg), "요청 매개변수가 잘못되었습니다.");
     }
