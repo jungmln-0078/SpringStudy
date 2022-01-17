@@ -43,10 +43,9 @@ public class JwtManager {
             Claims claims = Jwts.parser()
                     .setSigningKey(secretKey.getBytes())
                     .parseClaimsJws(jwt).getBody();
-            memberService.getMemberById((int) claims.get("mid"));
-            return true;
+
+            return memberService.getMemberById((int) claims.get("mid")) != null;
         } catch (Exception e) {
-            e.printStackTrace();
             return false;
         }
     }
