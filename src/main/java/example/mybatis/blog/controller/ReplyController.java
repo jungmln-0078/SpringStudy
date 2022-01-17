@@ -12,10 +12,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
 import java.math.BigInteger;
 
 import static example.mybatis.blog.module.APIHelper.parseErrors;
@@ -24,6 +26,7 @@ import static example.mybatis.blog.module.APIHelper.setResponseData;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/replies")
+@Validated
 public class ReplyController {
 
     @Autowired
@@ -50,9 +53,9 @@ public class ReplyController {
         }
     }
 
-    @ApiOperation(value = "댓글 수정", notes = "댓글을 수정합니다.", responseReference =  "ResponseDTO<String>")
+    @ApiOperation(value = "댓글 수정", notes = "댓글을 수정합니다.", responseReference = "ResponseDTO<String>")
     @PutMapping(value = "{rid}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ResponseDTO<String>> updateReply(HttpServletRequest request, @PathVariable long rid, @RequestBody String content) {
+    public ResponseEntity<ResponseDTO<String>> updateReply(HttpServletRequest request, @PathVariable @Valid @Positive long rid, @RequestBody String content) {
         try {
             if (!jwtManager.checkClaim(request.getHeader("jwt"))) {
                 return setResponseData(HttpStatus.UNAUTHORIZED, null, "인증되지 않은 요청입니다.");
@@ -68,7 +71,7 @@ public class ReplyController {
 
     @ApiOperation(value = "댓글 삭제", notes = "댓글을 삭제합니다.", responseReference = "ResponseDTO<String>")
     @DeleteMapping(value = "{rid}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ResponseDTO<String>> deleteReply(HttpServletRequest request, @PathVariable long rid) {
+    public ResponseEntity<ResponseDTO<String>> deleteReply(HttpServletRequest request, @PathVariable @Valid @Positive long rid) {
         try {
             if (!jwtManager.checkClaim(request.getHeader("jwt"))) {
                 return setResponseData(HttpStatus.UNAUTHORIZED, null, "인증되지 않은 요청입니다.");
