@@ -1,6 +1,9 @@
 package example.mybatis.blog.module;
 
+import example.mybatis.blog.controller.ArticleController;
 import example.mybatis.blog.response.ResponseDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
@@ -14,13 +17,17 @@ import java.util.List;
 
 public class APIHelper {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ArticleController.class);
+
     public static <T> ResponseEntity<ResponseDTO<T>> setResponseData(HttpStatus httpStatus, @Nullable T data, @Nullable String msg) {
         ResponseDTO<T> responseDTO = ResponseDTO.<T>builder()
                 .success(!httpStatus.isError())
                 .data(data)
                 .msg(msg)
                 .build();
-        return ResponseEntity.status(httpStatus).body(responseDTO);
+        ResponseEntity<ResponseDTO<T>> responseDTOResponseEntity = ResponseEntity.status(httpStatus).body(responseDTO);
+        LOGGER.info(responseDTOResponseEntity.toString());
+        return responseDTOResponseEntity;
     }
 
     public static <T> ResponseEntity<ResponseDTO<T>> setResponseHeaderJwt(ResponseEntity<ResponseDTO<T>> response, String jwt) {

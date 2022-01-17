@@ -8,6 +8,8 @@ import example.mybatis.blog.response.ResponseDTO;
 import example.mybatis.blog.service.MemberService;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
@@ -18,7 +20,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import java.math.BigInteger;
@@ -32,6 +33,8 @@ import static example.mybatis.blog.module.APIHelper.*;
 @RequestMapping("/api/members")
 @Validated
 public class MemberController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ArticleController.class);
 
     @Autowired
     private MemberService memberService;
