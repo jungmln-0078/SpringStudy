@@ -9,20 +9,26 @@ version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11'
 
 configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+gradle.projectsEvaluated {
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << "-parameters"
+    }
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'io.springfox:springfox-boot-starter:3.0.0'
-	implementation 'io.springfox:springfox-swagger-ui:3.0.0'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'io.springfox:springfox-boot-starter:3.0.0'
+    implementation 'io.springfox:springfox-swagger-ui:3.0.0'
 	implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.1'
 	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.2.1'
 	implementation 'org.mybatis:mybatis'
@@ -34,6 +40,7 @@ dependencies {
 	implementation 'ch.qos.logback:logback-core'
 	implementation 'ch.qos.logback:logback-classic'
 	implementation 'javax.xml.bind:jaxb-api'
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
 	implementation 'javax.validation:validation-api'
 	implementation 'org.springframework.security:spring-security-core'
 	implementation 'org.springframework.security:spring-security-web'

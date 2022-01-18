@@ -1,5 +1,6 @@
 package example.mybatis.blog.controller;
 
+import example.mybatis.blog.aspect.Authentication;
 import example.mybatis.blog.model.Member;
 import example.mybatis.blog.model.MemberDTO;
 import example.mybatis.blog.model.MemberLoginDTO;
@@ -80,13 +81,11 @@ public class MemberController {
         }
     }
 
+    @Authentication
     @ApiOperation(value = "회원 수정", notes = "회원을 수정합니다.", responseReference = "ResponseDTO<String>")
     @PutMapping(value = "{mid}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseDTO<String>> putMember(HttpServletRequest request, @PathVariable @Valid @Positive long mid, @RequestBody @Valid MemberDTO memberDTO, BindingResult bindingResult) {
         try {
-            if (!(jwtManager.checkClaim(request.getHeader("jwt"), mid))) {
-                return setResponseData(HttpStatus.UNAUTHORIZED, null, "인증되지 않은 요청입니다.");
-            }
             if (bindingResult.hasErrors()) {
                 return setResponseData(HttpStatus.BAD_REQUEST, parseErrors(bindingResult), "회원 수정에 실패하였습니다.");
             }
@@ -99,13 +98,11 @@ public class MemberController {
         }
     }
 
+    @Authentication
     @ApiOperation(value = "회원 삭제", notes = "회원을 삭제합니다.", responseReference = "ResponseDTO<String>")
     @DeleteMapping(value = "{mid}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseDTO<String>> deleteMember(HttpServletRequest request, @PathVariable @Valid @Positive long mid) {
         try {
-            if (!(jwtManager.checkClaim(request.getHeader("jwt"), mid))) {
-                return setResponseData(HttpStatus.UNAUTHORIZED, null, "인증되지 않은 요청입니다.");
-            }
             boolean isDeleted = memberService.deleteMember(mid) == 1;
             return isDeleted ?
                     setResponseData(HttpStatus.OK, null, "성공적으로 삭제되었습니다.") :

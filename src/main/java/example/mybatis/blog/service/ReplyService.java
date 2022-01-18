@@ -24,6 +24,10 @@ public class ReplyService {
         return replyMapper.getReplies(aid);
     }
 
+    public Reply getReplyById(long rid) {
+        return replyMapper.getReplyById(rid);
+    }
+
     public BigInteger addReply(ReplyDTO replyDTO) throws DataAccessException {
         Map<String, Object> param = new HashMap<>();
         param.put("aid", replyDTO.getAid());

@@ -3,6 +3,7 @@ package example.mybatis.blog.service;
 import example.mybatis.blog.mapper.ArticleMapper;
 import example.mybatis.blog.model.Article;
 import example.mybatis.blog.model.ArticleDTO;
+import example.mybatis.blog.model.ArticleWriteDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
@@ -22,7 +23,7 @@ public class ArticleService {
         if (size <= 0 || page < 0) {
             throw new Exception();
         } else {
-            return articleMapper.getArticles(page, size);
+            return articleMapper.getArticles(page * size, size);
         }
     }
 
@@ -39,8 +40,8 @@ public class ArticleService {
         return (BigInteger) param.get("aid");
     }
 
-    public int updateArticle(long aid, ArticleDTO articleDTO) throws DataAccessException {
-        return articleMapper.updateArticle(articleDTO.getTitle(), articleDTO.getContent(), aid);
+    public int updateArticle(long aid, ArticleWriteDTO articleWriteDTO) throws DataAccessException {
+        return articleMapper.updateArticle(articleWriteDTO.getTitle(), articleWriteDTO.getContent(), aid);
     }
 
     public int deleteArticle(long aid) throws DataAccessException {

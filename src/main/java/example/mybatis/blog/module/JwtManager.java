@@ -44,8 +44,9 @@ public class JwtManager {
                     .setSigningKey(secretKey.getBytes())
                     .parseClaimsJws(jwt).getBody();
 
-            return memberService.getMemberById((int) claims.get("mid")) != null;
+            return true;
         } catch (Exception e) {
+            e.printStackTrace();
             return false;
         }
     }
@@ -56,15 +57,16 @@ public class JwtManager {
                     .setSigningKey(secretKey.getBytes())
                     .parseClaimsJws(jwt).getBody();
 
-            return memberService.getMemberById((int) claims.get("mid")) != null && (long) claims.get("mid") == mid;
+            return memberService.getMemberById((int) claims.get("mid")) != null && Long.parseLong(String.valueOf(claims.get("mid"))) == mid;
         } catch (Exception e) {
+            e.printStackTrace();
             return false;
         }
     }
 
-    public Claims getJwtContent(String jwt) {
-        return Jwts.parser()
+    public long getJwtMid(String jwt) {
+        return Long.parseLong(String.valueOf(Jwts.parser()
                 .setSigningKey(secretKey.getBytes())
-                .parseClaimsJws(jwt).getBody();
+                .parseClaimsJws(jwt).getBody().get("mid")));
     }
 }

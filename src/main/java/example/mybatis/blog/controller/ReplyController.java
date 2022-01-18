@@ -1,6 +1,8 @@
 package example.mybatis.blog.controller;
 
+import example.mybatis.blog.aspect.Authentication;
 import example.mybatis.blog.model.ReplyDTO;
+import example.mybatis.blog.model.ReplyWriteDTO;
 import example.mybatis.blog.module.JwtManager;
 import example.mybatis.blog.response.ResponseDTO;
 import example.mybatis.blog.service.ReplyService;
@@ -39,16 +41,15 @@ public class ReplyController {
     @Autowired
     private JwtManager jwtManager;
 
+    @Authentication
     @ApiOperation(value = "댓글 작성", notes = "댓글을 작성합니다.", responseReference = "ResponseDTO<String>")
     @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ResponseDTO<String>> writeReply(HttpServletRequest request, @RequestBody @Valid ReplyDTO replyDTO, BindingResult bindingResult) {
+    public ResponseEntity<ResponseDTO<String>> addReply(HttpServletRequest request, @RequestBody @Valid ReplyWriteDTO replyWriteDTO, BindingResult bindingResult) {
         try {
-            if (!jwtManager.checkClaim(request.getHeader("jwt"))) {
-                return setResponseData(HttpStatus.UNAUTHORIZED, null, "인증되지 않은 요청입니다.");
-            }
             if (bindingResult.hasErrors()) {
                 return setResponseData(HttpStatus.BAD_REQUEST, parseErrors(bindingResult), "댓글 작성에 실패하였습니다.");
             }
+            ReplyDTO replyDTO = new ReplyDTO(replyWriteDTO.getAid(), jwtManager.getJwtMid(request.getHeader("jwt")), replyWriteDTO.getContent());
             BigInteger newReply = replyService.addReply(replyDTO);
             return setResponseData(HttpStatus.CREATED, "", null);
         } catch (DataAccessException e) {
@@ -57,13 +58,11 @@ public class ReplyController {
         }
     }
 
+    @Authentication
     @ApiOperation(value = "댓글 수정", notes = "댓글을 수정합니다.", responseReference = "ResponseDTO<String>")
     @PutMapping(value = "{rid}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseDTO<String>> updateReply(HttpServletRequest request, @PathVariable @Valid @Positive long rid, @RequestBody String content) {
         try {
-            if (!jwtManager.checkClaim(request.getHeader("jwt"))) {
-                return setResponseData(HttpStatus.UNAUTHORIZED, null, "인증되지 않은 요청입니다.");
-            }
             boolean isUpdated = replyService.updateReply(rid, content) == 1;
             return isUpdated ?
                     setResponseData(HttpStatus.OK, "", null) :
@@ -73,13 +72,11 @@ public class ReplyController {
         }
     }
 
+    @Authentication
     @ApiOperation(value = "댓글 삭제", notes = "댓글을 삭제합니다.", responseReference = "ResponseDTO<String>")
     @DeleteMapping(value = "{rid}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseDTO<String>> deleteReply(HttpServletRequest request, @PathVariable @Valid @Positive long rid) {
         try {
-            if (!jwtManager.checkClaim(request.getHeader("jwt"))) {
-                return setResponseData(HttpStatus.UNAUTHORIZED, null, "인증되지 않은 요청입니다.");
-            }
             boolean isDeleted = replyService.deleteReply(rid) == 1;
             return isDeleted ?
                     setResponseData(HttpStatus.OK, null, "성공적으로 삭제되었습니다.") :
