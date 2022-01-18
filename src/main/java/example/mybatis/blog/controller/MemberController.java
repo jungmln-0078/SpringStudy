@@ -61,7 +61,7 @@ public class MemberController {
             return setResponseHeaderJwt(setResponseData(HttpStatus.CREATED, "http://localhost:8080/api/member/" + newMember, null), jwt);
         } catch (DataAccessException e) {
             return e.getCause().getClass().equals(SQLIntegrityConstraintViolationException.class) ?
-                    setResponseData(HttpStatus.BAD_REQUEST, null, "회원 등록에 실패하였습니다. (이메일 또는 닉네임이 중복되었습니다.)") :
+                    setResponseData(HttpStatus.BAD_REQUEST, null, "회원 등록에 실패하였습니다. (이메일이 중복되었습니다.)") :
                     setResponseData(HttpStatus.BAD_REQUEST, null, "회원 등록에 실패하였습니다.");
         }
     }

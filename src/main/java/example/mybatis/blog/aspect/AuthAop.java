@@ -58,20 +58,20 @@ public class AuthAop {
 
         if (method.getName().contains("eArticle")) {
             long author = articleService.getArticleById(aid).getAuthor();
-            if (!jwtManager.checkClaim(jwt, author)) {
+            if (jwtManager.checkClaim(jwt, author)) {
                 throw new UnAuthorizedException();
             }
         } else if (method.getName().contains("eReply")) {
             long author = replyService.getReplyById(rid).getAuthor();
-            if (!jwtManager.checkClaim(jwt, author)) {
+            if (jwtManager.checkClaim(jwt, author)) {
                 throw new UnAuthorizedException();
             }
         } else if (method.getName().contains("Article") || method.getName().contains("Reply")) {
-            if (!jwtManager.checkClaim(jwt)) {
+            if (jwtManager.checkClaim(jwt)) {
                 throw new UnAuthorizedException();
             }
         } else {
-            if (!jwtManager.checkClaim(jwt, id)) {
+            if (jwtManager.checkClaim(jwt, id)) {
                 throw new UnAuthorizedException();
             }
         }

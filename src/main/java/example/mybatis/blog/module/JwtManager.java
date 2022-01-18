@@ -40,27 +40,29 @@ public class JwtManager {
 
     public boolean checkClaim(String jwt) {
         try {
+            if (jwt == null) return true;
             Claims claims = Jwts.parser()
                     .setSigningKey(secretKey.getBytes())
                     .parseClaimsJws(jwt).getBody();
 
-            return true;
+            return false;
         } catch (Exception e) {
             e.printStackTrace();
-            return false;
+            return true;
         }
     }
 
     public boolean checkClaim(String jwt, long mid) {
         try {
+            if (jwt == null) return true;
             Claims claims = Jwts.parser()
                     .setSigningKey(secretKey.getBytes())
                     .parseClaimsJws(jwt).getBody();
 
-            return memberService.getMemberById((int) claims.get("mid")) != null && Long.parseLong(String.valueOf(claims.get("mid"))) == mid;
+            return memberService.getMemberById((int) claims.get("mid")) == null || Long.parseLong(String.valueOf(claims.get("mid"))) != mid;
         } catch (Exception e) {
             e.printStackTrace();
-            return false;
+            return true;
         }
     }
 
