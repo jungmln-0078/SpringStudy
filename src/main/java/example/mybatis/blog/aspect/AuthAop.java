@@ -1,6 +1,5 @@
 package example.mybatis.blog.aspect;
 
-import example.mybatis.blog.model.ArticleDTO;
 import example.mybatis.blog.module.JwtManager;
 import example.mybatis.blog.module.UnAuthorizedException;
 import example.mybatis.blog.service.ArticleService;
@@ -13,8 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import static example.mybatis.blog.module.JwtManager.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;

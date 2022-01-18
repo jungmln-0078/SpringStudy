@@ -1,5 +1,6 @@
-package example.mybatis.blog.module;
+package example.mybatis.blog.aspect;
 
+import example.mybatis.blog.module.UnAuthorizedException;
 import example.mybatis.blog.response.ResponseDTO;
 import org.hibernate.validator.internal.engine.path.PathImpl;
 import org.springframework.http.HttpStatus;
