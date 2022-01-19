@@ -18,9 +18,9 @@ import java.lang.reflect.Method;
 
 @Aspect
 @Component
-public class AuthAop {
+public class AuthAspect {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AuthAop.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthAspect.class);
 
     @Autowired
     private JwtManager jwtManager;
@@ -37,7 +37,6 @@ public class AuthAop {
         Long aid = -1L;
         Long rid = -1L;
         String jwt = "";
-        Object dto = null;
         Object[] parameterValues = joinPoint.getArgs(); // 파라미터로 보내진 값
         String parameterName; // 파라미터 변수 이름
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();

@@ -4,6 +4,7 @@ import example.mybatis.blog.aspect.Authentication;
 import example.mybatis.blog.model.ReplyDTO;
 import example.mybatis.blog.model.ReplyWriteDTO;
 import example.mybatis.blog.module.JwtManager;
+import example.mybatis.blog.response.ResponseBuilder;
 import example.mybatis.blog.response.ResponseDTO;
 import example.mybatis.blog.service.ReplyService;
 import io.swagger.annotations.ApiOperation;
@@ -25,7 +26,6 @@ import javax.validation.constraints.Positive;
 import java.math.BigInteger;
 
 import static example.mybatis.blog.module.APIHelper.parseErrors;
-import static example.mybatis.blog.module.APIHelper.setResponseData;
 
 @RestController
 @RequiredArgsConstructor
@@ -47,14 +47,23 @@ public class ReplyController {
     public ResponseEntity<ResponseDTO<String>> addReply(HttpServletRequest request, @RequestBody @Valid ReplyWriteDTO replyWriteDTO, BindingResult bindingResult) {
         try {
             if (bindingResult.hasErrors()) {
-                return setResponseData(HttpStatus.BAD_REQUEST, parseErrors(bindingResult), "댓글 작성에 실패하였습니다.");
+                return new ResponseBuilder<String>()
+                        .setStatus(HttpStatus.BAD_REQUEST)
+                        .setBody(parseErrors(bindingResult), "댓글 작성에 실패하였습니다.")
+                        .build();
             }
             ReplyDTO replyDTO = new ReplyDTO(replyWriteDTO.getAid(), jwtManager.getJwtMid(request.getHeader("jwt")), replyWriteDTO.getContent());
             BigInteger newReply = replyService.addReply(replyDTO);
-            return setResponseData(HttpStatus.CREATED, "", null);
+            return new ResponseBuilder<String>()
+                    .setStatus(HttpStatus.CREATED)
+                    .setHeader("Location", "http://localhost:8080/api/articles/" + replyDTO.getAid())
+                    .setBody(null, "성공적으로 생성되었습니다.")
+                    .build();
         } catch (DataAccessException e) {
-            e.printStackTrace();
-            return setResponseData(HttpStatus.BAD_REQUEST, null, "댓글 작성에 실패하였습니다.");
+            return new ResponseBuilder<String>()
+                    .setStatus(HttpStatus.BAD_REQUEST)
+                    .setBody(null, "댓글 작성에 실패하였습니다.")
+                    .build();
         }
     }
 
@@ -65,10 +74,19 @@ public class ReplyController {
         try {
             boolean isUpdated = replyService.updateReply(rid, content) == 1;
             return isUpdated ?
-                    setResponseData(HttpStatus.OK, "", null) :
-                    setResponseData(HttpStatus.NOT_FOUND, null, "댓글 수정에 실패하였습니다.");
+                    new ResponseBuilder<String>()
+                            .setStatus(HttpStatus.OK)
+                            .setBody(null, "성공적으로 수정되었습니다.")
+                            .build() :
+                    new ResponseBuilder<String>()
+                            .setStatus(HttpStatus.NOT_FOUND)
+                            .setBody(null, "댓글 수정에 실패하였습니다.")
+                            .build();
         } catch (DataAccessException e) {
-            return setResponseData(HttpStatus.BAD_REQUEST, null, "댓글 수정에 실패하였습니다.");
+            return new ResponseBuilder<String>()
+                    .setStatus(HttpStatus.BAD_REQUEST)
+                    .setBody(null, "댓글 수정에 실패하였습니다.")
+                    .build();
         }
     }
 
@@ -79,10 +97,19 @@ public class ReplyController {
         try {
             boolean isDeleted = replyService.deleteReply(rid) == 1;
             return isDeleted ?
-                    setResponseData(HttpStatus.OK, null, "성공적으로 삭제되었습니다.") :
-                    setResponseData(HttpStatus.NOT_FOUND, null, "댓글 삭제에 실패하였습니다.");
+                    new ResponseBuilder<String>()
+                            .setStatus(HttpStatus.OK)
+                            .setBody(null, "성공적으로 삭제되었습니다.")
+                            .build() :
+                    new ResponseBuilder<String>()
+                            .setStatus(HttpStatus.NOT_FOUND)
+                            .setBody(null, "댓글 삭제에 실패하였습니다.")
+                            .build();
         } catch (DataAccessException e) {
-            return setResponseData(HttpStatus.BAD_REQUEST, null, "댓글 삭제에 실패하였습니다.");
+            return new ResponseBuilder<String>()
+                    .setStatus(HttpStatus.BAD_REQUEST)
+                    .setBody(null, "댓글 삭제에 실패하였습니다.")
+                    .build();
         }
     }
 }

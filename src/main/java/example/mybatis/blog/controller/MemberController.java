@@ -5,6 +5,7 @@ import example.mybatis.blog.model.Member;
 import example.mybatis.blog.model.MemberDTO;
 import example.mybatis.blog.model.MemberLoginDTO;
 import example.mybatis.blog.module.JwtManager;
+import example.mybatis.blog.response.ResponseBuilder;
 import example.mybatis.blog.response.ResponseDTO;
 import example.mybatis.blog.service.MemberService;
 import io.swagger.annotations.ApiOperation;
@@ -46,7 +47,11 @@ public class MemberController {
     @ApiOperation(value = "회원 리스트 조회", notes = "모든 회원을 조회합니다.", responseReference = "ResponseDTO<List<Member>>")
     @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseDTO<List<Member>>> getMembers() {
-        return setResponseData(HttpStatus.OK, memberService.getMembers(),null);
+        List<Member> members = memberService.getMembers();
+        return new ResponseBuilder<List<Member>>()
+                .setStatus(HttpStatus.OK)
+                .setBody(members, String.valueOf(members.size()))
+                .build();
     }
 
     @ApiOperation(value = "회원 등록", notes = "회원을 등록합니다.", responseReference = "ResponseDTO<String>")
@@ -54,15 +59,28 @@ public class MemberController {
     public ResponseEntity<ResponseDTO<String>> postMember(@RequestBody @Valid MemberDTO memberDTO, BindingResult bindingResult) {
         try {
             if (bindingResult.hasErrors()) {
-                return setResponseData(HttpStatus.BAD_REQUEST, parseErrors(bindingResult), "회원 등록에 실패하였습니다.");
+                return new ResponseBuilder<String>()
+                        .setStatus(HttpStatus.BAD_REQUEST)
+                        .setBody(parseErrors(bindingResult), "회원 등록에 실패하였습니다.")
+                        .build();
             }
             BigInteger newMember = memberService.addMember(memberDTO);
             String jwt = jwtManager.createToken(newMember.longValue());
-            return setResponseHeaderJwt(setResponseData(HttpStatus.CREATED, "http://localhost:8080/api/member/" + newMember, null), jwt);
+            return new ResponseBuilder<String>()
+                    .setStatus(HttpStatus.CREATED)
+                    .setHeader("jwt", jwt)
+                    .setBody(null, "성공적으로 생성되었습니다.")
+                    .build();
         } catch (DataAccessException e) {
             return e.getCause().getClass().equals(SQLIntegrityConstraintViolationException.class) ?
-                    setResponseData(HttpStatus.BAD_REQUEST, null, "회원 등록에 실패하였습니다. (이메일이 중복되었습니다.)") :
-                    setResponseData(HttpStatus.BAD_REQUEST, null, "회원 등록에 실패하였습니다.");
+                    new ResponseBuilder<String>()
+                            .setStatus(HttpStatus.BAD_REQUEST)
+                            .setBody(null, "회원 등록에 실패하였습니다. (이메일이 중복되었습니다.)")
+                            .build() :
+                    new ResponseBuilder<String>()
+                            .setStatus(HttpStatus.BAD_REQUEST)
+                            .setBody(null, "회원 등록에 실패하였습니다.")
+                            .build();
         }
     }
 
@@ -71,13 +89,23 @@ public class MemberController {
     public ResponseEntity<ResponseDTO<String>> login(@RequestBody @Valid MemberLoginDTO memberLoginDTO, BindingResult bindingResult) {
         try {
             if (bindingResult.hasErrors()) {
-                return setResponseData(HttpStatus.BAD_REQUEST, parseErrors(bindingResult), "로그인에 실패하였습니다.");
+                return new ResponseBuilder<String>()
+                        .setStatus(HttpStatus.BAD_REQUEST)
+                        .setBody(parseErrors(bindingResult), "로그인에 실패하였습니다.")
+                        .build();
             }
             Member member = memberService.getMemberByPw(memberLoginDTO.getEmail(), memberLoginDTO.getPassword());
             String jwt = jwtManager.createToken(member.getMid());
-            return setResponseHeaderJwt(setResponseData(HttpStatus.OK, "http://localhost:8080/api/member/" + member.getMid(), null), jwt);
+            return new ResponseBuilder<String>()
+                    .setStatus(HttpStatus.OK)
+                    .setHeader("jwt", jwt)
+                    .setBody(null, "로그인 되었습니다.")
+                    .build();
         } catch (Exception e) {
-            return setResponseData(HttpStatus.UNAUTHORIZED, null, "로그인에 실패하였습니다.");
+            return new ResponseBuilder<String>()
+                    .setStatus(HttpStatus.UNAUTHORIZED)
+                    .setBody(null, "로그인에 실패하였습니다.")
+                    .build();
         }
     }
 
@@ -87,14 +115,26 @@ public class MemberController {
     public ResponseEntity<ResponseDTO<String>> putMember(HttpServletRequest request, @PathVariable @Valid @Positive long mid, @RequestBody @Valid MemberDTO memberDTO, BindingResult bindingResult) {
         try {
             if (bindingResult.hasErrors()) {
-                return setResponseData(HttpStatus.BAD_REQUEST, parseErrors(bindingResult), "회원 수정에 실패하였습니다.");
+                return new ResponseBuilder<String>()
+                        .setStatus(HttpStatus.BAD_REQUEST)
+                        .setBody(parseErrors(bindingResult), "회원 수정에 실패하였습니다.")
+                        .build();
             }
             boolean isUpdated = memberService.updateMember(mid, memberDTO) == 1;
             return isUpdated ?
-                    setResponseData(HttpStatus.OK, "http://localhost:8080/api/member/" + mid, "수정 되었습니다.") :
-                    setResponseData(HttpStatus.NOT_FOUND, null, "회원 수정에 실패하였습니다. (해당 회원을 찾을 수 없습니다.)");
+                    new ResponseBuilder<String>()
+                            .setStatus(HttpStatus.OK)
+                            .setBody(null, "성공적으로 수정되었습니다.")
+                            .build() :
+                    new ResponseBuilder<String>()
+                            .setStatus(HttpStatus.NOT_FOUND)
+                            .setBody(null, "회원 수정에 실패하였습니다. (해당 회원을 찾을 수 없습니다.)")
+                            .build();
         } catch (DataAccessException e) {
-            return setResponseData(HttpStatus.BAD_REQUEST, null, "회원 수정에 실패하였습니다.");
+            return new ResponseBuilder<String>()
+                    .setStatus(HttpStatus.BAD_REQUEST)
+                    .setBody(null, "회원 수정에 실패하였습니다.")
+                    .build();
         }
     }
 
@@ -105,10 +145,19 @@ public class MemberController {
         try {
             boolean isDeleted = memberService.deleteMember(mid) == 1;
             return isDeleted ?
-                    setResponseData(HttpStatus.OK, null, "성공적으로 삭제되었습니다.") :
-                    setResponseData(HttpStatus.NOT_FOUND, null, "회원 삭제에 실패하였습니다. (해당 회원을 찾을 수 없습니다.)");
+                    new ResponseBuilder<String>()
+                            .setStatus(HttpStatus.OK)
+                            .setBody(null, "성공적으로 삭제되었습니다.")
+                            .build() :
+                    new ResponseBuilder<String>()
+                            .setStatus(HttpStatus.NOT_FOUND)
+                            .setBody(null, "회원 삭제에 실패하였습니다. (해당 회원을 찾을 수 없습니다.)")
+                            .build();
         } catch (DataAccessException e) {
-            return setResponseData(HttpStatus.BAD_REQUEST, null, "회원 삭제에 실패하였습니다.");
+            return new ResponseBuilder<String>()
+                    .setStatus(HttpStatus.BAD_REQUEST)
+                    .setBody(null, "회원 삭제에 실패하였습니다.")
+                    .build();
         }
     }
 }

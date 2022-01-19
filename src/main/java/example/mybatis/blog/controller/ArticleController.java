@@ -5,6 +5,7 @@ import example.mybatis.blog.model.Article;
 import example.mybatis.blog.model.ArticleDTO;
 import example.mybatis.blog.model.ArticleWriteDTO;
 import example.mybatis.blog.module.JwtManager;
+import example.mybatis.blog.response.ResponseBuilder;
 import example.mybatis.blog.response.ResponseDTO;
 import example.mybatis.blog.service.ArticleService;
 import example.mybatis.blog.service.ReplyService;
@@ -57,7 +58,10 @@ public class ArticleController {
             for (Article a : articles) {
                 a.setReplies(replyService.getReplies(a.getAid()));
             }
-            return setResponseData(HttpStatus.OK, articles, null);
+            return new ResponseBuilder<List<Article>>()
+                    .setStatus(HttpStatus.OK)
+                    .setBody(articles, String.valueOf(articles.size()))
+                    .build();
         } catch (Exception e) {
             e.printStackTrace();
             redirect(response, "localhost:8080/api/articles");
@@ -70,10 +74,16 @@ public class ArticleController {
     public ResponseEntity<ResponseDTO<Article>> getArticleById(@PathVariable @Valid @Positive long aid) {
         Article article = articleService.getArticleById(aid);
         if (article == null) {
-            return setResponseData(HttpStatus.NOT_FOUND, null, "게시글을 찾을 수 없습니다.");
+            return new ResponseBuilder<Article>()
+                    .setStatus(HttpStatus.NOT_FOUND)
+                    .setBody(null, "게시글을 찾을 수 없습니다.")
+                    .build();
         } else {
             article.setReplies(replyService.getReplies(aid));
-            return setResponseData(HttpStatus.OK, article, null);
+            return new ResponseBuilder<Article>()
+                    .setStatus(HttpStatus.OK)
+                    .setBody(article, null)
+                    .build();
         }
 
     }
@@ -84,13 +94,23 @@ public class ArticleController {
     public ResponseEntity<ResponseDTO<String>> addArticle(HttpServletRequest request, @RequestBody @Valid ArticleWriteDTO articleWriteDTO, BindingResult bindingResult) {
         try {
             if (bindingResult.hasErrors()) {
-                return setResponseData(HttpStatus.BAD_REQUEST, parseErrors(bindingResult), "게시글 작성에 실패하였습니다.");
+                return new ResponseBuilder<String>()
+                        .setStatus(HttpStatus.BAD_REQUEST)
+                        .setBody(parseErrors(bindingResult), "게시글 작성에 실패하였습니다.")
+                        .build();
             }
             ArticleDTO articleDTO = new ArticleDTO(articleWriteDTO.getTitle(), jwtManager.getJwtMid(request.getHeader("jwt")), articleWriteDTO.getContent());
             BigInteger newPost = articleService.addArticle(articleDTO);
-            return setResponseData(HttpStatus.CREATED, "http://localhost:8080/api/articles/" + newPost, null);
+            return new ResponseBuilder<String>()
+                    .setStatus(HttpStatus.CREATED)
+                    .setHeader("Location", "http://localhost:8080/api/articles/" + newPost)
+                    .setBody(null, "성공적으로 생성되었습니다.")
+                    .build();
         } catch (DataAccessException e) {
-            return setResponseData(HttpStatus.BAD_REQUEST, null, "게시글 작성에 실패하였습니다.");
+            return new ResponseBuilder<String>()
+                    .setStatus(HttpStatus.BAD_REQUEST)
+                    .setBody(null, "게시글 작성에 실패하였습니다.")
+                    .build();
         }
     }
 
@@ -100,14 +120,27 @@ public class ArticleController {
     public ResponseEntity<ResponseDTO<String>> updateArticle(HttpServletRequest request, @PathVariable @Valid @Positive long aid, @RequestBody @Valid ArticleWriteDTO articleWriteDTO, BindingResult bindingResult) {
         try {
             if (bindingResult.hasErrors()) {
-                return setResponseData(HttpStatus.BAD_REQUEST, parseErrors(bindingResult), "게시글 수정에 실패하였습니다.");
+                return new ResponseBuilder<String>()
+                        .setStatus(HttpStatus.BAD_REQUEST)
+                        .setBody(parseErrors(bindingResult), "게시글 수정에 실패하였습니다.")
+                        .build();
             }
             boolean isUpdated = articleService.updateArticle(aid, articleWriteDTO) == 1;
             return isUpdated ?
-                    setResponseData(HttpStatus.OK, "http://localhost:8080/api/articles/" + aid, null) :
-                    setResponseData(HttpStatus.NOT_FOUND, null, "게시글 수정에 실패하였습니다. (해당 게시글을 찾을 수 없습니다.)");
+                    new ResponseBuilder<String>()
+                            .setStatus(HttpStatus.OK)
+                            .setHeader("Location", "http://localhost:8080/api/articles/" + aid)
+                            .setBody(null, "성공적으로 수정되었습니다.")
+                            .build() :
+                    new ResponseBuilder<String>()
+                            .setStatus(HttpStatus.NOT_FOUND)
+                            .setBody(null, "게시글 수정에 실패하였습니다. (해당 게시글을 찾을 수 없습니다.")
+                            .build();
         } catch (DataAccessException e) {
-            return setResponseData(HttpStatus.BAD_REQUEST, null, "게시글 수정에 실패하였습니다.");
+            return new ResponseBuilder<String>()
+                    .setStatus(HttpStatus.BAD_REQUEST)
+                    .setBody(null, "게시글 수정에 실패하였습니다.")
+                    .build();
         }
     }
 
@@ -118,10 +151,19 @@ public class ArticleController {
         try {
             boolean isDeleted = articleService.deleteArticle(aid) == 1;
             return isDeleted ?
-                    setResponseData(HttpStatus.OK, null, "성공적으로 삭제되었습니다.") :
-                    setResponseData(HttpStatus.NOT_FOUND, null, "게시글 삭제에 실패하였습니다. (해당 게시글을 찾을 수 없습니다.)");
+                    new ResponseBuilder<String>()
+                            .setStatus(HttpStatus.OK)
+                            .setBody(null, "성공적으로 삭제되었습니다.")
+                            .build() :
+                    new ResponseBuilder<String>()
+                            .setStatus(HttpStatus.NOT_FOUND)
+                            .setBody(null, "게시글 삭제에 실패하였습니다. (해당 게시글을 찾을 수 없습니다.)")
+                            .build();
         } catch (DataAccessException e) {
-            return setResponseData(HttpStatus.BAD_REQUEST, null, "게시글 삭제에 실패하였습니다.");
+            return new ResponseBuilder<String>()
+                    .setStatus(HttpStatus.BAD_REQUEST)
+                    .setBody(null, "게시글 삭제에 실패하였습니다.")
+                    .build();
         }
     }
 }
