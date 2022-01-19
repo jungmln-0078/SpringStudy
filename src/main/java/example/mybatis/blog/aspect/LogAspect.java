@@ -26,9 +26,6 @@ public class LogAspect {
         Object proceed = joinPoint.proceed();
 
         stopWatch.stop();
-
-        LOGGER.info("running time = {} s", stopWatch.getTotalTimeSeconds());
-
         return proceed;
     }
 }
