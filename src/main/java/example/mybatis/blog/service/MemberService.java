@@ -3,8 +3,12 @@ package example.mybatis.blog.service;
 import example.mybatis.blog.mapper.MemberMapper;
 import example.mybatis.blog.model.Member;
 import example.mybatis.blog.model.MemberDTO;
+import example.mybatis.blog.response.ResponseBuilder;
+import example.mybatis.blog.response.ResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,8 +28,12 @@ public class MemberService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public List<Member> getMembers() throws DataAccessException {
-        return memberMapper.getMembers();
+    public ResponseEntity<ResponseDTO<List<Member>>> getMembers() throws DataAccessException {
+        List<Member> members = memberMapper.getMembers();
+        return new ResponseBuilder<List<Member>>()
+                .setStatus(HttpStatus.OK)
+                .setBody(members, String.valueOf(members.size()))
+                .build();
     }
 
     public Member getMemberByEmail(String email) throws DataAccessException {

@@ -47,11 +47,8 @@ public class MemberController {
     @ApiOperation(value = "회원 리스트 조회", notes = "모든 회원을 조회합니다.", responseReference = "ResponseDTO<List<Member>>")
     @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseDTO<List<Member>>> getMembers() {
-        List<Member> members = memberService.getMembers();
-        return new ResponseBuilder<List<Member>>()
-                .setStatus(HttpStatus.OK)
-                .setBody(members, String.valueOf(members.size()))
-                .build();
+        return memberService.getMembers();
+
     }
 
     @ApiOperation(value = "회원 등록", notes = "회원을 등록합니다.", responseReference = "ResponseDTO<String>")
@@ -59,10 +56,7 @@ public class MemberController {
     public ResponseEntity<ResponseDTO<String>> postMember(@RequestBody @Valid MemberDTO memberDTO, BindingResult bindingResult) {
         try {
             if (bindingResult.hasErrors()) {
-                return new ResponseBuilder<String>()
-                        .setStatus(HttpStatus.BAD_REQUEST)
-                        .setBody(parseErrors(bindingResult), "회원 등록에 실패하였습니다.")
-                        .build();
+                return responseBindingError(bindingResult, "회원 등록에 실패하였습니다.");
             }
             BigInteger newMember = memberService.addMember(memberDTO);
             String jwt = jwtManager.createToken(newMember.longValue());

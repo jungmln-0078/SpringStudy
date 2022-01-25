@@ -21,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -44,9 +45,6 @@ public class ArticleController {
     private ArticleService articleService;
 
     @Autowired
-    private ReplyService replyService;
-
-    @Autowired
     private JwtManager jwtManager;
 
     @ApiOperation(value = "게시글 리스트 조회", notes = "게시글을 조회합니다.", responseReference = "ResponseDTO<List<Article>>")
@@ -54,17 +52,9 @@ public class ArticleController {
     public ResponseEntity<ResponseDTO<List<Article>>> getArticles(HttpServletResponse response, @RequestParam(value = "size", required = false, defaultValue = "10") @Valid @Positive long size,
                                                                   @RequestParam(value = "page", required = false, defaultValue = "0") @Valid @PositiveOrZero long page) throws IOException {
         try {
-            List<Article> articles = articleService.getArticles(size, page);
-            for (Article a : articles) {
-                a.setReplies(replyService.getReplies(a.getAid()));
-            }
-            return new ResponseBuilder<List<Article>>()
-                    .setStatus(HttpStatus.OK)
-                    .setBody(articles, String.valueOf(articles.size()))
-                    .build();
+            return articleService.getArticles(size, page);
         } catch (Exception e) {
-            e.printStackTrace();
-            redirect(response, "localhost:8080/api/articles");
+            redirect(response, "localhost:8081/api/articles");
             return null;
         }
     }
@@ -72,98 +62,34 @@ public class ArticleController {
     @ApiOperation(value = "게시글 보기", notes = "게시글의 내용을 봅니다.", responseReference = "ResponseDTO<Article>")
     @GetMapping(value = "{aid}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseDTO<Article>> getArticleById(@PathVariable @Valid @Positive long aid) {
-        Article article = articleService.getArticleById(aid);
-        if (article == null) {
-            return new ResponseBuilder<Article>()
-                    .setStatus(HttpStatus.NOT_FOUND)
-                    .setBody(null, "게시글을 찾을 수 없습니다.")
-                    .build();
-        } else {
-            article.setReplies(replyService.getReplies(aid));
-            return new ResponseBuilder<Article>()
-                    .setStatus(HttpStatus.OK)
-                    .setBody(article, null)
-                    .build();
-        }
-
+        return articleService.getArticleById(aid);
     }
 
     @Authentication
     @ApiOperation(value = "게시글 작성", notes = "게시글을 작성합니다.", responseReference = "ResponseDTO<String>")
     @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseDTO<String>> addArticle(HttpServletRequest request, @RequestBody @Valid ArticleWriteDTO articleWriteDTO, BindingResult bindingResult) {
-        try {
-            if (bindingResult.hasErrors()) {
-                return new ResponseBuilder<String>()
-                        .setStatus(HttpStatus.BAD_REQUEST)
-                        .setBody(parseErrors(bindingResult), "게시글 작성에 실패하였습니다.")
-                        .build();
-            }
-            ArticleDTO articleDTO = new ArticleDTO(articleWriteDTO.getTitle(), jwtManager.getJwtMid(request.getHeader("jwt")), articleWriteDTO.getContent());
-            BigInteger newPost = articleService.addArticle(articleDTO);
-            return new ResponseBuilder<String>()
-                    .setStatus(HttpStatus.CREATED)
-                    .setHeader("Location", "http://localhost:8080/api/articles/" + newPost)
-                    .setBody(null, "성공적으로 생성되었습니다.")
-                    .build();
-        } catch (DataAccessException e) {
-            return new ResponseBuilder<String>()
-                    .setStatus(HttpStatus.BAD_REQUEST)
-                    .setBody(null, "게시글 작성에 실패하였습니다.")
-                    .build();
+        if (bindingResult.hasErrors()) {
+            return responseBindingError(bindingResult, "게시글 작성에 실패하였습니다.");
         }
+        ArticleDTO articleDTO = new ArticleDTO(articleWriteDTO.getTitle(), jwtManager.getJwtMid(request.getHeader("jwt")), articleWriteDTO.getContent());
+        return articleService.addArticle(articleDTO);
     }
 
     @Authentication
     @ApiOperation(value = "게시글 수정", notes = "게시글을 수정합니다.", responseReference = "ResponseDTO<String>")
     @PutMapping(value = "{aid}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseDTO<String>> updateArticle(HttpServletRequest request, @PathVariable @Valid @Positive long aid, @RequestBody @Valid ArticleWriteDTO articleWriteDTO, BindingResult bindingResult) {
-        try {
-            if (bindingResult.hasErrors()) {
-                return new ResponseBuilder<String>()
-                        .setStatus(HttpStatus.BAD_REQUEST)
-                        .setBody(parseErrors(bindingResult), "게시글 수정에 실패하였습니다.")
-                        .build();
-            }
-            boolean isUpdated = articleService.updateArticle(aid, articleWriteDTO) == 1;
-            return isUpdated ?
-                    new ResponseBuilder<String>()
-                            .setStatus(HttpStatus.OK)
-                            .setHeader("Location", "http://localhost:8080/api/articles/" + aid)
-                            .setBody(null, "성공적으로 수정되었습니다.")
-                            .build() :
-                    new ResponseBuilder<String>()
-                            .setStatus(HttpStatus.NOT_FOUND)
-                            .setBody(null, "게시글 수정에 실패하였습니다. (해당 게시글을 찾을 수 없습니다.")
-                            .build();
-        } catch (DataAccessException e) {
-            return new ResponseBuilder<String>()
-                    .setStatus(HttpStatus.BAD_REQUEST)
-                    .setBody(null, "게시글 수정에 실패하였습니다.")
-                    .build();
+        if (bindingResult.hasErrors()) {
+            return responseBindingError(bindingResult, "게시글 수정에 실패하였습니다.");
         }
+        return articleService.updateArticle(aid, articleWriteDTO);
     }
 
     @Authentication
     @ApiOperation(value = "게시글 삭제", notes = "게시글을 삭제합니다.", responseReference = "ResponseDTO<String>")
     @DeleteMapping(value = "{aid}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseDTO<String>> deleteArticle(HttpServletRequest request, @PathVariable @Valid @Positive long aid) {
-        try {
-            boolean isDeleted = articleService.deleteArticle(aid) == 1;
-            return isDeleted ?
-                    new ResponseBuilder<String>()
-                            .setStatus(HttpStatus.OK)
-                            .setBody(null, "성공적으로 삭제되었습니다.")
-                            .build() :
-                    new ResponseBuilder<String>()
-                            .setStatus(HttpStatus.NOT_FOUND)
-                            .setBody(null, "게시글 삭제에 실패하였습니다. (해당 게시글을 찾을 수 없습니다.)")
-                            .build();
-        } catch (DataAccessException e) {
-            return new ResponseBuilder<String>()
-                    .setStatus(HttpStatus.BAD_REQUEST)
-                    .setBody(null, "게시글 삭제에 실패하였습니다.")
-                    .build();
-        }
+        return articleService.deleteArticle(aid);
     }
 }

@@ -3,6 +3,7 @@ package example.mybatis.blog.aspect;
 import example.mybatis.blog.module.UnAuthorizedException;
 import example.mybatis.blog.response.ResponseBuilder;
 import example.mybatis.blog.response.ResponseDTO;
+import org.apache.ibatis.javassist.NotFoundException;
 import org.hibernate.validator.internal.engine.path.PathImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +35,14 @@ public class ApiExceptionHandler {
         return new ResponseBuilder<String>()
                 .setStatus(HttpStatus.UNAUTHORIZED)
                 .setBody(null, "인증되지 않은 요청입니다.")
+                .build();
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    protected ResponseEntity<ResponseDTO<String>> notFoundException(NotFoundException ex) {
+        return new ResponseBuilder<String>()
+                .setStatus(HttpStatus.NOT_FOUND)
+                .setBody(null, ex.getMessage())
                 .build();
     }
 }

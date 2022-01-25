@@ -4,6 +4,7 @@ import example.mybatis.blog.module.JwtManager;
 import example.mybatis.blog.module.UnAuthorizedException;
 import example.mybatis.blog.service.ArticleService;
 import example.mybatis.blog.service.ReplyService;
+import org.apache.ibatis.javassist.NotFoundException;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -55,10 +56,15 @@ public class AuthAspect {
             }
         }
 
+
         if (method.getName().contains("eArticle")) {
-            long author = articleService.getArticleById(aid).getAuthor();
-            if (jwtManager.checkClaim(jwt, author)) {
-                throw new UnAuthorizedException();
+            try {
+                long author = articleService.getArticleByIdRaw(aid).getAuthor();
+                if (jwtManager.checkClaim(jwt, author)) {
+                    throw new UnAuthorizedException();
+                }
+            } catch (NullPointerException e) {
+                throw new NotFoundException("해당 게시글을 찾을 수 없습니다.");
             }
         } else if (method.getName().contains("eReply")) {
             long author = replyService.getReplyById(rid).getAuthor();

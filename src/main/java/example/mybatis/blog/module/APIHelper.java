@@ -1,5 +1,9 @@
 package example.mybatis.blog.module;
 
+import example.mybatis.blog.response.ResponseBuilder;
+import example.mybatis.blog.response.ResponseDTO;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 
@@ -21,5 +25,12 @@ public class APIHelper {
 
     public static void redirect(HttpServletResponse response, String uri) throws IOException {
         response.sendRedirect(uri);
+    }
+
+    public static ResponseEntity<ResponseDTO<String>> responseBindingError(BindingResult bindingResult, String msg) {
+        return new ResponseBuilder<String>()
+                .setStatus(HttpStatus.BAD_REQUEST)
+                .setBody(parseErrors(bindingResult), msg)
+                .build();
     }
 }
