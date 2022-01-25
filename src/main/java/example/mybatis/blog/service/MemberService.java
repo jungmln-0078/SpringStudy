@@ -28,12 +28,8 @@ public class MemberService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public ResponseEntity<ResponseDTO<List<Member>>> getMembers() throws DataAccessException {
-        List<Member> members = memberMapper.getMembers();
-        return new ResponseBuilder<List<Member>>()
-                .setStatus(HttpStatus.OK)
-                .setBody(members, String.valueOf(members.size()))
-                .build();
+    public List<Member> getMembers() throws DataAccessException {
+        return memberMapper.getMembers();
     }
 
     public Member getMemberByEmail(String email) throws DataAccessException {

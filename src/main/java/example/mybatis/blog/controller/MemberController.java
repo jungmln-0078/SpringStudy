@@ -47,8 +47,10 @@ public class MemberController {
     @ApiOperation(value = "회원 리스트 조회", notes = "모든 회원을 조회합니다.", responseReference = "ResponseDTO<List<Member>>")
     @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseDTO<List<Member>>> getMembers() {
-        return memberService.getMembers();
-
+        return new ResponseBuilder<List<Member>>()
+                .setStatus(HttpStatus.OK)
+                .setBody(memberService.getMembers(), null)
+                .build();
     }
 
     @ApiOperation(value = "회원 등록", notes = "회원을 등록합니다.", responseReference = "ResponseDTO<String>")
@@ -63,6 +65,7 @@ public class MemberController {
             return new ResponseBuilder<String>()
                     .setStatus(HttpStatus.CREATED)
                     .setHeader("jwt", jwt)
+                    .setHeader("Location", "http://localhost:8081/api/member/" + newMember)
                     .setBody(null, "성공적으로 생성되었습니다.")
                     .build();
         } catch (DataAccessException e) {
@@ -93,6 +96,7 @@ public class MemberController {
             return new ResponseBuilder<String>()
                     .setStatus(HttpStatus.OK)
                     .setHeader("jwt", jwt)
+                    .setHeader("Location", "http://localhost:8081/api/member/" + member.getMid())
                     .setBody(null, "로그인 되었습니다.")
                     .build();
         } catch (Exception e) {
@@ -118,6 +122,7 @@ public class MemberController {
             return isUpdated ?
                     new ResponseBuilder<String>()
                             .setStatus(HttpStatus.OK)
+                            .setHeader("Location", "http://localhost:8081/api/member/" + mid)
                             .setBody(null, "성공적으로 수정되었습니다.")
                             .build() :
                     new ResponseBuilder<String>()
